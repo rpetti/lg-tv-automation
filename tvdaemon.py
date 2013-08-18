@@ -4,6 +4,46 @@ import serial
 import socket
 from scapy.all import *
 import time
+import BaseHTTPServer
+import thread
+from threading import Lock
+
+HOST_NAME='192.168.1.21'
+PORT_NUMBER=8798
+
+class SharedData():
+	__data = {}
+	__lock = Lock()
+
+	@classmethod
+	def set(cls, name, value):
+		with cls.__lock:
+			cls.__data[name] = value
+	@classmethod
+	def get(cls, name):
+		with cls.__lock:
+			return cls.__data[name]
+
+class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
+	def do_POST(s):
+		print(s.path)
+		if s.path == '/useTvForMediaCenter':
+			SharedData.set('useTvForMediaCenter',True)
+			print('use tv for media center')
+		if s.path == '/dontUseTvForMediaCenter':
+			SharedData.set('useTvForMediaCenter',False)
+			print('dont use tv for media center')
+		s.send_response(200)
+		s.send_header('Content-type','text/html')
+		s.end_headers()
+		s.wfile.write('<html><body>Ok</body></html>')
+
+def httpListenerThread():
+	server_address=(HOST_NAME,PORT_NUMBER)
+	httpd = BaseHTTPServer.HTTPServer(server_address,MyHandler)
+	httpd.serve_forever()
+
+httpListenerThread = thread.start_new_thread(httpListenerThread,())
 
 def sendCommand(cmd):
 	ser = serial.Serial(
@@ -74,23 +114,37 @@ def isXboxOn_Connect():
 def isXboxOn():
 	return isXboxOn_Scapy_ARP()
 
-xboxOn=False
-turnTvOffWithXbox=False
-
+usingTvWithXbox=False
+usingTvWithMediaCenter=False
+tvOn=False
+SharedData.set('useTvForMediaCenter',False)
 
 while(True):
+	useTvForMediaCenter = SharedData.get('useTvForMediaCenter')
 	if isXboxOn():
-		if not xboxOn:
+		if not usingTvWithXbox:
 			if not isTvOn():
 				turnOnTv()
-				turnTvOffWithXbox=True
+			tvOn=True
 			switchToXbox()
-			xboxOn=True
+			usingTvWithXbox=True
 	else:
-		if xboxOn:
+		if usingTvWithXbox:
 			switchToMediaCenter()
-			if turnTvOffWithXbox:
-				turnOffTv()
-				turnTvOffWithXbox=False
-		xboxOn=False
+			usingTvWithXbox=False
+
+	if useTvForMediaCenter:
+		if not usingTvWithMediaCenter:
+			if not isTvOn():
+				turnOnTv()
+			tvOn=True
+			switchToMediaCenter()
+			usingTvWithMediaCenter=True
+	else:
+		if usingTvWithMediaCenter:
+			usingTvWithMediaCenter=False
+	if (not usingTvWithMediaCenter) and (not usingTvWithXbox):
+		if tvOn==True:
+			turnOffTv()
+			tvOn=False
 	time.sleep(5)
