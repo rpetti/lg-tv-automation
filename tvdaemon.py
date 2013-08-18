@@ -52,6 +52,13 @@ def isXboxOn_Scapy():
 			return True
 	return False
 
+def isXboxOn_Scapy_ARP():
+	conf.verb=0
+	ans,unans=srp(Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.23"),timeout=2)
+	for snd,rcv in ans:
+		return True
+	return False
+
 def isXboxOn_Connect():
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.settimeout(5)
@@ -65,7 +72,7 @@ def isXboxOn_Connect():
 	return False
 
 def isXboxOn():
-	return isXboxOn_Scapy()
+	return isXboxOn_Scapy_ARP()
 
 xboxOn=False
 turnTvOffWithXbox=False
