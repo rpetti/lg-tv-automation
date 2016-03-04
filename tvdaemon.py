@@ -7,6 +7,7 @@ import time
 import BaseHTTPServer
 import thread
 from threading import Lock
+from subprocess import call
 
 HOST_NAME='192.168.1.21'
 PORT_NUMBER=8798
@@ -33,6 +34,8 @@ class MyHandler(BaseHTTPServer.BaseHTTPRequestHandler):
 		if s.path == '/dontUseTvForMediaCenter':
 			SharedData.set('useTvForMediaCenter',False)
 			print('dont use tv for media center')
+		if s.path == '/toggleLight':
+			call(["/home/rpetti/bin/wemo-toggle"])
 		s.send_response(200)
 		s.send_header('Content-type','text/html')
 		s.end_headers()
