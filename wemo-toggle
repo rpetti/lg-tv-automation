@@ -1,0 +1,14 @@
+#!/bin/bash
+
+
+TRIES=5
+
+until(wemo switch switch toggle); do
+	wemo clear
+	sleep 1
+	((TRIES = TRIES - 1))
+	if [[ $TRIES -le 1 ]]; then
+		echo giving up
+		break;
+	fi
+done
