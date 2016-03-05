@@ -21,6 +21,11 @@ def dontUseTvForMediaCenter():
 	tvpower.turnOffTv()
 	return "true"
 
+@app.route('/toggleTv')
+def toggleTv():
+	tvpower.toggleTv()
+	return "true"
+
 @app.route('/toggleLight')
 def toggleLight():
 	wemo.toggleLight()

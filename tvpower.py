@@ -30,6 +30,12 @@ def isPowerOn():
 	else:
 		return True
 
+def toggleTv():
+	if isPowerOn():
+		turnOffTv()
+	else:
+		turnOnTv()
+
 def main(argv):
 	try:
 		opts, args = getopt.getopt(argv,"h",["on","off","status"])
