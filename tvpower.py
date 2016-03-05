@@ -18,29 +18,36 @@ def sendCommand(cmd):
 	ser.close()
 
 def turnOnTv():
-	print("turning on tv")
 	sendCommand("ka 01 01\r")
-	time.sleep(1)
 
 def turnOffTv():
-	print("turning off tv")
 	sendCommand("ka 01 00\r")
-	time.sleep(1)
+
+def isPowerOn():
+	resp = sendCommand("ka 01 FF\r")
+	if resp == "a 01 OK00x":
+		return False
+	else:
+		return True
 
 def main(argv):
 	try:
-		opts, args = getopt.getopt(argv,"h",["on","off"])
+		opts, args = getopt.getopt(argv,"h",["on","off","status"])
 	except getopt.GetoptError:
-		print 'tvpower.py [--on,--off]'
+		print 'tvpower.py [--on,--off,--status]'
 		sys.exit(2)
 	for opt, arg in opts:
 		if opt == '-h':
-			print 'tvpower.py [--on,--off]'
+			print 'tvpower.py [--on,--off,--status]'
 			sys.exit()
 		if opt == "--on":
+			print("turning on tv")
 			turnOnTv()
 		elif opt == "--off":
+			print("turning off tv")
 			turnOffTv()
+		elif opt == "--status":
+			print isPowerOn()
 
 if __name__ == "__main__":
 	main(sys.argv[1:])
